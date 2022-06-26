@@ -1,0 +1,11 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "local",
+            "database": "${workspaceFolder:gpg_cloud_backup}/data.db"
+        }
+    ],
+    "sqltools.useNodeRuntime": true
+}
