@@ -130,3 +130,6 @@ dmypy.json
 
 # env
 env/
+test_data/dest_location/
+test_data/restore
+*.db

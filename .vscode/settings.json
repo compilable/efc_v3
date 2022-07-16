@@ -5,6 +5,18 @@
             "driver": "SQLite",
             "name": "local",
             "database": "${workspaceFolder:gpg_cloud_backup}/data.db"
+        },
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "database": "${workspaceFolder:efc_v3}/test_data/source_location/.db",
+            "name": "test_db"
+        },
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "database": "${workspaceFolder:efc_v3}/test_data/source_location/.db",
+            "name": "t2"
         }
     ],
     "sqltools.useNodeRuntime": true
