@@ -1,4 +1,3 @@
-
 import datetime
 import socket
 import sqlite3
@@ -11,11 +10,6 @@ import subprocess
 from os.path import exists
 from pathlib import Path
 from unittest.mock import patch
-
-DB_FILE = "./data.db"
-EXTENTION = 'l2.gpg'
-IGNORE_FILE_TYPES = ['.svg', '.db']
-ALLOW_DUPLICATE_FILES = True
 
 
 class OSUtils:
@@ -77,7 +71,7 @@ class OSUtils:
         for dp, dn, files in os.walk(source_folder):
             # print(dp),
             for file in files:
-                if Path(file).name != Path(db_location).name and Path(file).suffix not in self.IGNORE_FILE_LIST:
+                if Path(file).name != Path(db_location).name and str(Path(file).suffix).replace('.', '') not in self.IGNORE_FILE_LIST:
                     # print(Path(file).suffix)
                     file_name = os.path.join(dp, file)
                     file_map[os.path.basename(file_name)] = file_name
@@ -277,7 +271,7 @@ class ProcessRequest:
         duplicate_count = 0
 
         for file in filterd_file_list:
-            file_hash = osUtils.generate_hash(file)
+            file_hash = self.osUtils.generate_hash(file)
             file_exists = self.DBManager.find_existing_file_from_hash(
                 file_hash)
             fq_file_path = os.path.abspath(file)
@@ -316,7 +310,7 @@ class ProcessRequest:
 
         print('encrypted file count : ' + str(update_count))
 
-    def start_decryption(self, destination_folder, new_destination_folder, db_location=None):
+    def start_decryption(self, destination_folder, new_destination_folder):
         # 1. list all files from table which were encrypted.
         dec_files_from_db = self.DBManager.list_enc_files_from_db()
         # 2. list all available files from the source folder to be decrypted
@@ -324,12 +318,12 @@ class ProcessRequest:
             destination_folder, self.DBManager.DB_FILE)
         # 3. decrypt the matching elements
         file_count = 0
-
+        print(dec_files_from_dest)
         for dec_file in dec_files_from_db:
-            # print(dec_file)
             if dec_file[5] in dec_files_from_dest:
                 enc_file_hash = self.osUtils.generate_hash(
                     dec_files_from_dest[dec_file[5]])
+                # print(enc_file_hash)
                 if enc_file_hash == dec_file[6]:
                     print('matching file found : ' +
                           dec_file[5] + ' starting the decrypting process..')
@@ -346,17 +340,3 @@ class ProcessRequest:
 
         print('Total : %s files out of %s , were successfully decrypted.' %
               (str(file_count), str(len(dec_files_from_db))))
-
-
-if __name__ == '__main__':
-    osUtils = OSUtils(EXTENTION, IGNORE_FILE_TYPES)
-    process_config = {
-        "layer_1_passwd": "123",
-        "layer_1_passwd": "321",
-        "allow_duplicates": ALLOW_DUPLICATE_FILES,
-    }
-    process_user_request = ProcessRequest(
-        DBUtils(DB_FILE), osUtils, process_config)
-    process_user_request.start_encryption('./test_data/source_location','./test_data/dest_location')
-    process_user_request.start_decryption(
-        './test_data/dest_location', './test_data/restore', './test_data/source_location')
