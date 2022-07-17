@@ -38,30 +38,42 @@ Use the below commands as the parameters:
 
 | Commands | Description | Optional | Default |
 | ------ | ------ | ------ |------ |
-| -o | operation (e for encrypt, d for decrypt) | No | e |
-| -s | source folder location | No | N/A |
-| -d | destination folder location | No | N/A |
+| -h | help / display all options | Yes | N/A |
+| -operation | operation (e for encrypt, d for decrypt) | No | e |
+| -src | source folder location | No | N/A |
+| -dest | destination folder location | No | N/A |
 | -index-password | password to encrypt the `index file`. | Yes | N/A |
-| -password | password to encrypt the `file content`.  | No | N/A |
-| -i | index file name and location | Yes | an index file will be created with `.db` on the source location. |
-| -r | restore folder location | Yes | N/A |
+| -data-password | password to encrypt the `file content`.  | No | N/A |
+| -index-file | index file name and location | Yes | an index file will be created with `index.db` on the source location. |
+| -restore | restore folder location | Yes | N/A |
 | -allow-duplicate | allow duplicate files during encryption process | Yes | False |
-| -random-file-names | generate random names for files | Yes | False |
+| -random-names | generate random names for files | Yes | False |
 | -ignore-types | list of file types (extensions) to ignore. | Yes | N/A |
 
 ## Running Tests:
 Use the sample files inside the `test` folder with the below commands:
 
-### _encrypt:_
-Below command should `encrypt` the all the content found inside the `test/test_data/source_location` to the folder : `test/test_data/destination_location`.
+
+#### Test files:
+
+
 ```
-evc_v3 -o e -s test/test_data/source_location -d test/test_data/destination_location
+python test_encrypt.py
+
+python test_decrypt 
 ```
 
-### _decrypt:_
+
+### _encrypt with commands:_
+Below command should `encrypt` the all the content found inside the `test/test_data/source_location` to the folder : `test/test_data/destination_location`.
+```
+efc_v3.py -o e -src test/test_data/source_location/ -dest test/test_data/dest_location -index-file index.db -index-password 123 -data-password 321 -allow-duplicate yes -random-names yes -ignore-types prop
+```
+
+### _decrypt with commands:_
 Below command should `decrypt` the all the content found inside the `test/test_data/destination_location` to the folder : `test/test_data/source_location`.
 ```
-evc_v3 -o d -s test/test_data/destination_location  -d test/test_data/source_location
+efc_v3.py -o d -src test/test_data/dest_location -restore test/test_data/restore -index-file index.db -index-password 123 -data-password 321
 ```
 
 ## Reference:
