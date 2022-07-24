@@ -1,4 +1,3 @@
-
 from init import DBUtils, OSUtils, ProcessRequest
 import os
 import shutil
@@ -7,13 +6,16 @@ DB_FILE = "./test.db"
 EXTENTION = 'l2.gpg'
 IGNORE_FILE_TYPES = ['prop']
 ALLOW_DUPLICATE_FILES = True
-DEST_LOCATION ='./test/test_data/dest_location'
+SRC_LOCATION ='./test/test_data/dest_location'
+DEST_LOCATION = 'test/test_data/restore'
 
 if __name__ == '__main__':
     
-    # clean the db, remove the enc. files
-    if os.path.exists(DB_FILE):
-        os.remove(DB_FILE)
+    # check the db, remove the restore data
+    if not os.path.exists(DB_FILE):
+        print('missing db index, exiting')
+        exit()
+        
     if os.path.exists(DEST_LOCATION):
         shutil.rmtree(DEST_LOCATION)
     
@@ -25,11 +27,11 @@ if __name__ == '__main__':
     }
     process_user_request = ProcessRequest(
         DBUtils(DB_FILE), osUtils, process_config)
-    response = process_user_request.start_encryption(
-        './test/test_data/source_location',DEST_LOCATION )
-    
-    # {'operation': 'enc', 'total_count': 21, 'duplicate_count': 1, 'success_count': 20, 'failed_count': 1}
-    if response['operation'] ==  'enc':
+    response = process_user_request.start_decryption(
+        SRC_LOCATION, DEST_LOCATION)
+
+    # {'operation': 'dec', 'total_from_db': 20, 'ignored_count': 0, 'success_count': 20, 'failed_count': 0}
+    if response['operation'] ==  'dec' and response['total_from_db'] ==  20 and response['failed_count'] ==  0:
         print("PASS")
     else:
         print(response)
