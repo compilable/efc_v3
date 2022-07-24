@@ -9,6 +9,12 @@ ALLOW_DUPLICATE_FILES = True
 SRC_LOCATION ='./test/test_data/dest_location'
 DEST_LOCATION = 'test/test_data/restore'
 
+
+def clean_data():
+    # check the db, remove the restore data
+    if os.path.exists(DEST_LOCATION):
+        shutil.rmtree(DEST_LOCATION)
+        
 if __name__ == '__main__':
     
     # check the db, remove the restore data
@@ -16,9 +22,8 @@ if __name__ == '__main__':
         print('missing db index, exiting')
         exit()
         
-    if os.path.exists(DEST_LOCATION):
-        shutil.rmtree(DEST_LOCATION)
-    
+    clean_data()
+        
     osUtils = OSUtils(EXTENTION, IGNORE_FILE_TYPES)
     process_config = {
         "layer_1_passwd": "123",
@@ -33,5 +38,6 @@ if __name__ == '__main__':
     # {'operation': 'dec', 'total_from_db': 20, 'ignored_count': 0, 'success_count': 20, 'failed_count': 0}
     if response['operation'] ==  'dec' and response['total_from_db'] ==  20 and response['failed_count'] ==  0:
         print("PASS")
+        clean_data()
     else:
         print(response)
