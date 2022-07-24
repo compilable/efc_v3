@@ -2,12 +2,13 @@ from init import DBUtils, OSUtils, ProcessRequest
 import os
 import shutil
 
-DB_FILE = "./test.db"
+DB_FILE = "./test.db.l2.gpg"
 EXTENTION = 'l2.gpg'
 IGNORE_FILE_TYPES = ['prop']
 ALLOW_DUPLICATE_FILES = True
 SRC_LOCATION ='./test/test_data/dest_location'
 DEST_LOCATION = 'test/test_data/restore'
+DELETE_INDEX_AFTER= True
 
 
 def clean_data():
@@ -27,8 +28,9 @@ if __name__ == '__main__':
     osUtils = OSUtils(EXTENTION, IGNORE_FILE_TYPES)
     process_config = {
         "layer_1_passwd": "123",
-        "layer_1_passwd": "321",
+        "layer_2_passwd": "321",
         "allow_duplicates": ALLOW_DUPLICATE_FILES,
+        "delete_index" : DELETE_INDEX_AFTER
     }
     process_user_request = ProcessRequest(
         DBUtils(DB_FILE), osUtils, process_config)
