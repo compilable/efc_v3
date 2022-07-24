@@ -260,13 +260,27 @@ class ProcessRequest:
         self.config = config
 
     def start_encryption(self, source_folder, destination_folder):
-        # 0. init location (0.1 - create the db)
+        # 0. init location & create the db)
         self.DBManager.create_db()
         Path(destination_folder).mkdir(parents=True, exist_ok=True)
-        # 1. list all files in the folder
+
+        # 1. list all files in the src folder
         filterd_file_list = self.osUtils.list_files(
             source_folder, self.DBManager.DB_FILE).values()
-        # 2. insert the file details into table
+
+        # 2. filter & insert the file details into table
+        file_count, duplicate_count = self.__filter_files_to_enc(
+            filterd_file_list)
+        print('Total duplicates found : %s out of %s.' %
+              (str(duplicate_count), str(file_count)))
+
+        # 3. read the files from table & encrypt the files to desination
+        update_count = self.__perform_enc_and_update_db(destination_folder)
+        print('encrypted file count : ' + str(update_count))
+
+        return {"operation": 'enc', "total_count": file_count, "duplicate_count": duplicate_count, "success_count": update_count, "failed_count": file_count-update_count}
+
+    def __filter_files_to_enc(self, filterd_file_list):
         file_count = 0
         duplicate_count = 0
 
@@ -293,35 +307,45 @@ class ProcessRequest:
                 if self.DBManager.create_record(file_record):
                     file_count = file_count + 1
 
-        print('Total duplicates found : %s out of %s.' %
-              (str(duplicate_count), str(file_count)))
+        return (file_count, duplicate_count)
 
-        # 3. read the files from table
+    def __perform_enc_and_update_db(self, destination_folder):
         update_count = 0
-        # 4. encrypt the files to desination
+
         for file_object in self.DBManager.list_new_files_from_db():
             # (ID, 'NAME', 'ORI_HASH', SIZE)
-            print(file_object[2])
+            # print(file_object[2])
             enc_file_data = self.osUtils.encrypt_file(
                 file_object[2], destination_folder, self.config['layer_1_passwd'])
             # 5. update the table for encrypted file hash
             if self.DBManager.update_enc_file_data(file_object[0], enc_file_data[0], enc_file_data[1]):
                 update_count = update_count + 1
 
-        print('encrypted file count : ' + str(update_count))
-        
-        return {"operation":'enc', "total_count": file_count , "duplicate_count":duplicate_count,"success_count":update_count,"failed_count": file_count-update_count}
+        return update_count
 
     def start_decryption(self, destination_folder, new_destination_folder):
         # 1. list all files from table which were encrypted.
         dec_files_from_db = self.DBManager.list_enc_files_from_db()
+
         # 2. list all available files from the source folder to be decrypted
         dec_files_from_dest = self.osUtils.list_files(
             destination_folder, self.DBManager.DB_FILE)
+
         # 3. decrypt the matching elements
+        success_file_count, ignored_file_count, total_file_count = self.__dec_matching_files(
+            dec_files_from_db, dec_files_from_dest, destination_folder, new_destination_folder)
+
+        print('Total : %s files out of %s , were successfully decrypted.' %
+              (str(success_file_count), str(total_file_count)))
+
+        failed_count = total_file_count - \
+            (ignored_file_count + success_file_count)
+        return {'operation': 'dec', 'total_from_db': total_file_count, 'ignored_count': ignored_file_count, 'success_count': success_file_count, 'failed_count': failed_count}
+
+    def __dec_matching_files(self, dec_files_from_db, dec_files_from_dest, destination_folder, new_destination_folder):
         success_file_count = 0
         ignored_file_count = 0
-        
+
         for dec_file in dec_files_from_db:
             if dec_file[5] in dec_files_from_dest:
                 enc_file_hash = self.osUtils.generate_hash(
@@ -343,8 +367,4 @@ class ProcessRequest:
                 else:
                     ignored_file_count = ignored_file_count + 1
 
-        print('Total : %s files out of %s , were successfully decrypted.' %
-              (str(success_file_count), str(len(dec_files_from_db))))
-        
-        failed_count = len(dec_files_from_db) - (ignored_file_count + success_file_count)
-        return {'operation': 'dec', 'total_from_db': len(dec_files_from_db), 'ignored_count': ignored_file_count, 'success_count': success_file_count , 'failed_count': failed_count}
+        return (success_file_count, ignored_file_count, len(dec_files_from_db))
