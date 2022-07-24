@@ -6,6 +6,7 @@ from sqlite3 import Error, IntegrityError
 import hashlib
 import math
 import os
+import shutil
 import subprocess
 from os.path import exists
 from pathlib import Path
@@ -27,13 +28,16 @@ class OSUtils:
         s = round(size_bytes / p, 2)
         return "%s %s" % (s, size_name[i])
 
-    def encrypt_file(self, source_file, destination_folder, passwd):
+    def encrypt_file(self, source_file, destination_folder, passwd, del_src_after=False):
         file_name = os.path.basename(
             source_file) + '.' + self.ENC_FILE_EXTENTION
         destination = os.path.join(destination_folder, file_name)
         subprocess.run(["gpg", "-o", destination, "--symmetric", "--cipher-algo",
                        "AES256",  "--batch", "--yes",  "--passphrase", passwd, source_file])
         if exists(destination):
+            if del_src_after:
+                os.remove(source_file)
+
             return [self.generate_hash(destination), os.path.basename(destination)]
 
     def decrypt_file(self, source_file, destination_folder, passwd):
@@ -85,6 +89,9 @@ class OSUtils:
 class DBUtils:
 
     def __init__(self, db_file):
+        self.DB_FILE = db_file
+
+    def update_db_file(self, db_file):
         self.DB_FILE = db_file
 
     def create_record(self, file_record, db_location=None):
@@ -276,6 +283,14 @@ class ProcessRequest:
 
         # 3. read the files from table & encrypt the files to desination
         update_count = self.__perform_enc_and_update_db(destination_folder)
+
+        # 4. enc. the index file (db)
+        if self.config['layer_2_passwd']:
+            enc_file_data = self.osUtils.encrypt_file(
+                self.DBManager.DB_FILE, os.path.dirname(os.path.abspath(self.DBManager.DB_FILE)), self.config['layer_2_passwd'], True)
+            print('encrypting the index file : %s -> %s , sha256 : %s ' %
+                  (self.DBManager.DB_FILE, enc_file_data[1], enc_file_data[0]))
+
         print('encrypted file count : ' + str(update_count))
 
         return {"operation": 'enc', "total_count": file_count, "duplicate_count": duplicate_count, "success_count": update_count, "failed_count": file_count-update_count}
@@ -324,6 +339,9 @@ class ProcessRequest:
         return update_count
 
     def start_decryption(self, destination_folder, new_destination_folder):
+        # 0. decrypt the encrypted index file.
+        self.__decrypt_index_file()
+
         # 1. list all files from table which were encrypted.
         dec_files_from_db = self.DBManager.list_enc_files_from_db()
 
@@ -338,10 +356,29 @@ class ProcessRequest:
         print('Total : %s files out of %s , were successfully decrypted.' %
               (str(success_file_count), str(total_file_count)))
 
+        if self.config['delete_index']:
+            os.remove(self.DBManager.DB_FILE)
+
         failed_count = total_file_count - \
             (ignored_file_count + success_file_count)
         return {'operation': 'dec', 'total_from_db': total_file_count, 'ignored_count': ignored_file_count, 'success_count': success_file_count, 'failed_count': failed_count}
 
+    def __decrypt_index_file(self):
+        if self.config['layer_2_passwd']:
+            new_db_file_name = self.DBManager.DB_FILE+'.db'
+
+            dec_file = self.osUtils.decrypt_file(
+                self.DBManager.DB_FILE, new_db_file_name, self.config['layer_2_passwd'])
+
+            if os.path.exists(new_db_file_name):
+                self.DBManager.update_db_file(new_db_file_name)
+                print('decrypting the index file :  %s successful.' % (dec_file))
+                return True
+            else:
+                print('decrypting the index file :  %s  failed, exiting' %
+                      (dec_file))
+                exit()
+                
     def __dec_matching_files(self, dec_files_from_db, dec_files_from_dest, destination_folder, new_destination_folder):
         success_file_count = 0
         ignored_file_count = 0
