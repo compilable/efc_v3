@@ -24,6 +24,8 @@ def start(argv):
                         help='password to encrypt the `index file`. (optional)')
     parser.add_argument('-index-password', required=False, default='e',
                         help='index file name and location (optional) an index file will be created with `.db` on the source location.')
+    parser.add_argument('-index-delete', required=False, default=True,
+                        help='delete the decrypted index file.')    
     parser.add_argument('-data-password', required=True, default='e',
                         help='password to encrypt the `file content`..')
     parser.add_argument('-restore', required=False, default='.', type=pathlib.Path,
@@ -54,6 +56,7 @@ def deligate_operation(args):
         "layer_2_passwd": options.index_password,
         "layer_1_passwd": options.data_password,
         "allow_duplicates": True if options.allow_duplicate == 'yes' else False,
+        "delete_index" : True if options.index_delete == 'yes' else False
     }
     print(process_config)
     process_user_request = ProcessRequest(
@@ -63,7 +66,7 @@ def deligate_operation(args):
         process_user_request.start_encryption(options.src, options.dest)
     else:
         process_user_request.start_decryption(
-            options.src, options.restore, options.index_file)
+            options.src, options.restore, options.index_file, options.index_delete)
 
 
 def validate_options(args):
