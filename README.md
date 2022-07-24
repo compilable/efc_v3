@@ -45,7 +45,7 @@ Use the below commands as the parameters:
 | -index-password | password to encrypt the `index file`. | yes | N/A |
 | -data-password | password to encrypt the `file content`.  | no | N/A |
 | -index-file | index file name and location | yes | an index file will be created with `index.db` on the source location. |
-| -index-delete | delete the decrypted index file.  | yes/no | yes |
+| -index-delete | delete the decrypted index file.  | yes | yes |
 | -restore | restore folder location | yes | N/A |
 | -allow-duplicate | allow duplicate files during encryption process | yes | False |
 | -random-names | generate random names for files | yes | False |
