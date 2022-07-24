@@ -38,17 +38,18 @@ Use the below commands as the parameters:
 
 | Commands | Description | Optional | Default |
 | ------ | ------ | ------ |------ |
-| -h | help / display all options | Yes | N/A |
-| -operation | operation (e for encrypt, d for decrypt) | No | e |
-| -src | source folder location | No | N/A |
-| -dest | destination folder location | No | N/A |
-| -index-password | password to encrypt the `index file`. | Yes | N/A |
-| -data-password | password to encrypt the `file content`.  | No | N/A |
-| -index-file | index file name and location | Yes | an index file will be created with `index.db` on the source location. |
-| -restore | restore folder location | Yes | N/A |
-| -allow-duplicate | allow duplicate files during encryption process | Yes | False |
-| -random-names | generate random names for files | Yes | False |
-| -ignore-types | list of file types (extensions) to ignore. | Yes | N/A |
+| -h | help / display all options | yes | N/A |
+| -operation | operation (e for encrypt, d for decrypt) | no | e |
+| -src | source folder location | no | N/A |
+| -dest | destination folder location | no | N/A |
+| -index-password | password to encrypt the `index file`. | yes | N/A |
+| -data-password | password to encrypt the `file content`.  | no | N/A |
+| -index-file | index file name and location | yes | an index file will be created with `index.db` on the source location. |
+| -index-delete | delete the decrypted index file.  | yes/no | yes |
+| -restore | restore folder location | yes | N/A |
+| -allow-duplicate | allow duplicate files during encryption process | yes | False |
+| -random-names | generate random names for files | yes | False |
+| -ignore-types | list of file types (extensions) to ignore. | yes | N/A |
 
 ## Running Tests:
 Use the sample files inside the `test` folder with the below commands:
