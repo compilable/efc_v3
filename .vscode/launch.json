@@ -1,0 +1,17 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: EFC V3 runner with params",
+            "type": "python",
+            "request": "launch",
+            "program": "efc_v3.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": ["-o" ,"e", "-src", "./test/test_data/source_location" ,"-dest", "./test/test_data/dest_location", "-index-file", "index.db" , "-index-password", "123" , "-data-password" , "321" , "-allow-duplicate", "yes" , "-random-names", "yes" , "-ignore-types", "prop"]
+        }
+    ]
+}
