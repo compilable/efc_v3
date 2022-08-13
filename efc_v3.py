@@ -24,7 +24,7 @@ def start(argv):
                         help='password to encrypt the `index file`. (optional)')
     parser.add_argument('-index-password', required=False, default='e',
                         help='index file name and location (optional) an index file will be created with `.db` on the source location.')
-    parser.add_argument('-index-delete', required=False, default=True, choices=['yes', 'no'],
+    parser.add_argument('-index-delete', required=False, default='no', choices=['yes', 'no'],
                         help='delete the decrypted index file.') 
     parser.add_argument('-data-password', required=True, default='e',
                         help='password to encrypt the `file content`..')
@@ -55,6 +55,7 @@ def deligate_operation(args):
     process_config = {
         "layer_2_passwd": options.index_password,
         "layer_1_passwd": options.data_password,
+        "random_names": True if options.random_names.lower() == 'yes' else False,
         "allow_duplicates": True if options.allow_duplicate.lower() == 'yes' else False,
         "delete_index": True if options.index_delete.lower() == 'yes' else False
     }
@@ -102,7 +103,7 @@ def validate_options(args):
 
 
 def add_pepper(text):
-    return (hashlib.sha512(''.join(str([chr(i) for i in range(128)])).encode("utf-8")+text.encode("utf-8")).digest()).decode("unicode_escape")
+    return (hashlib.sha512(''.join(str([chr(i) for i in range(128)])).encode("utf-8")+text.encode("utf-8")).digest()).decode("ascii")
 
 
 if __name__ == "__main__":
