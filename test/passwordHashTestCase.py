@@ -4,7 +4,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join('..')))
 import efc_v3
 
-class WidgetTestCase(unittest.TestCase):
+class PasswordHashTestCase(unittest.TestCase):
     
     def setUp(self):
         self.password = 'passwd-123-$pecia1'
