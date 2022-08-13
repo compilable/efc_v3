@@ -2,13 +2,15 @@
 
 from distutils.log import error
 import errno
-import hashlib
 import os
 import sys
 import argparse
 import pathlib
+import bcrypt
 
 from init import DBUtils, OSUtils, ProcessRequest
+
+SALT_ROUNDS=15
 
 
 def start(argv):
@@ -94,16 +96,18 @@ def validate_options(args):
         print(error_text)
         exit()
 
-    # add pepper and generate sha512 hash
+    # generate the bcrypt hash for the given password
     args.data_password = add_pepper(args.data_password)
     args.index_password = add_pepper(args.index_password)
 
     return args
 
 
-def add_pepper(text):
-    return (hashlib.sha512(''.join(str([chr(i) for i in range(128)])).encode("utf-8")+text.encode("utf-8")).digest()).decode("unicode_escape")
-
+def add_pepper(password):
+    if not password:
+        return None
+    password = password.encode('utf-8')
+    return bcrypt.hashpw(password, bcrypt.gensalt(SALT_ROUNDS))
 
 if __name__ == "__main__":
     start(sys.argv[1:])
